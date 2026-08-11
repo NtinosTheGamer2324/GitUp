@@ -14,6 +14,10 @@ Currently implemented:
 * `init` — Initialize a Git repository
 * `commit` — Commit specific files, or all changes
 * `commit --dynamic_file` — Interactively pick which files go into a commit
+* `repo create` — Create a GitHub repository (defaults to the current
+  project's folder name) and link it as `origin`
+* `publish` — Push the current branch, refusing to overwrite remote
+  history GitUp hasn't seen locally
 * `login` / `logout` / `whoami` — GitHub authentication via OAuth device flow
 * Interactive confirmation dialogs
 * Colored/status-style logging
@@ -28,6 +32,7 @@ gitup status
 gitup commit
 gitup clone
 gitup publish
+gitup repo create
 gitup put aside
 gitup get aside
 gitup get
@@ -55,10 +60,14 @@ GitUp/
 │   ├── auth/
 │   │   ├── auth.go        # Device flow client + credential storage
 │   │   └── commands.go    # login / logout / whoami
+│   ├── github/
+│   │   └── repos.go        # GitHub REST API (repository creation)
 │   ├── git/
 │   │   ├── init.go
 │   │   ├── commit.go
 │   │   ├── select.go       # Interactive --dynamic_file picker
+│   │   ├── remote.go        # Get/set the origin remote URL
+│   │   ├── publish.go       # Fetch, divergence check, push
 │   │   ├── gitignore.go
 │   │   └── misc.go
 │   └── helper/
@@ -118,6 +127,25 @@ gitup commit --dynamic_file "Fix filesystem"
 This opens a checklist of every changed file. Type numbers to toggle files
 (`1 3 4`), `a` to select all, `n` to select none, `c` to confirm and commit,
 or `q` to cancel.
+
+Create a GitHub repository (defaults to a private repo named after the
+current folder) and link it as `origin`:
+
+```bash
+gitup repo create
+gitup repo create my-cool-project
+gitup repo create my-cool-project --public
+```
+
+Publish the current branch (defaults to remote `origin`, current folder):
+
+```bash
+gitup publish
+gitup publish origin .
+```
+
+GitUp checks the remote before publishing and refuses to push if `origin`
+has commits it hasn't seen locally, rather than silently overwriting them.
 
 Log in to GitHub:
 
