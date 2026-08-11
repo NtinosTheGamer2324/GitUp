@@ -91,7 +91,7 @@ func printHelp() {
 	fmt.Println("Commands:")
 	fmt.Println("  init              Create a GitUp repository")
 	fmt.Println("  setup             Configure a repository")
-	fmt.Println("  setup gitingore   Create default gitignore")
+	fmt.Println("  setup gitignore   Create default gitignore")
 	fmt.Println("  status            how repository status")
 	fmt.Println("  commit            Commit selected files")
 }
