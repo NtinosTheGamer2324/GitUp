@@ -110,7 +110,7 @@ func WhoAmI() error {
 		return err
 	}
 
-	helper.Log("GitUp™ Identity")
+	helper.Log("GitUp Identity")
 	helper.Log("")
 
 	if creds == nil {

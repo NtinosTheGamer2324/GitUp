@@ -65,7 +65,7 @@ func SelectFilesInteractively(folder string) ([]string, error) {
 	for {
 		printFileSelection(entries)
 
-		fmt.Print("\033[32mNumbers to toggle, 'a' all, 'n' none, 'c' commit, 'q' cancel:\033[0m ")
+		fmt.Print(helper.Green("Numbers to toggle, 'a' all, 'n' none, 'c' commit, 'q' cancel: "))
 		line, _ := reader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
@@ -138,18 +138,40 @@ func selectedPaths(entries []*fileEntry) []string {
 
 func printFileSelection(entries []*fileEntry) {
 	fmt.Println()
-	fmt.Println("\033[1mGitUp™ — Select files\033[0m")
+	fmt.Println(helper.Bold("GitUp — Select files"))
 	fmt.Println()
 
 	for i, e := range entries {
-		box := "☐"
+		box := helper.Dim("☐")
 		if e.selected {
-			box = "☑"
+			box = helper.Green("☑")
 		}
 
-		fmt.Printf("  %2d. %s %c %s\n", i+1, box, e.status, e.path)
+		fmt.Printf("  %s %s %s %s\n",
+			helper.Dim(fmt.Sprintf("%2d.", i+1)),
+			box,
+			statusLabel(e.status),
+			e.path,
+		)
 	}
 
 	fmt.Println()
-	fmt.Printf("Selected: %d file(s)\n", len(selectedPaths(entries)))
+	fmt.Printf("%s %s\n", helper.Cyan("Selected:"), fmt.Sprintf("%d file(s)", len(selectedPaths(entries))))
+}
+
+// statusLabel renders a worktree status code with a color matching what it
+// means: new files green, modified yellow, deleted red.
+func statusLabel(status gitlib.StatusCode) string {
+	label := fmt.Sprintf("%c", status)
+
+	switch status {
+	case gitlib.Untracked, gitlib.Added:
+		return helper.Green(label)
+	case gitlib.Deleted:
+		return helper.Red(label)
+	case gitlib.Modified, gitlib.Renamed, gitlib.Copied:
+		return helper.Yellow(label)
+	default:
+		return label
+	}
 }

@@ -11,9 +11,12 @@ import (
 	"time"
 )
 
-// GitHubClientID is the Client ID of the GitUp GitHub App.
-// Device flow does not require a client secret.
-const GitHubClientID = "Iv23ctEafUjuNuS3k4vZ"
+const GitHubClientID = "Ov23livxtkqXRK4WcscO"
+
+// deviceFlowScope is the OAuth scope requested during the device flow.
+// "repo" grants read/write access to public and private repositories,
+// which is what's needed to create repos and push to them.
+const deviceFlowScope = "repo"
 
 const (
 	deviceCodeURL  = "https://github.com/login/device/code"
@@ -23,11 +26,11 @@ const (
 
 // Credentials is what GitUp stores on disk after a successful login.
 type Credentials struct {
-	Login             string    `json:"login"`
-	AccessToken       string    `json:"access_token"`
-	RefreshToken      string    `json:"refresh_token,omitempty"`
-	ExpiresAt         time.Time `json:"expires_at,omitempty"`
-	RefreshExpiresAt  time.Time `json:"refresh_expires_at,omitempty"`
+	Login            string    `json:"login"`
+	AccessToken      string    `json:"access_token"`
+	RefreshToken     string    `json:"refresh_token,omitempty"`
+	ExpiresAt        time.Time `json:"expires_at,omitempty"`
+	RefreshExpiresAt time.Time `json:"refresh_expires_at,omitempty"`
 }
 
 // Expired reports whether the access token is known to be expired.
@@ -84,6 +87,7 @@ var ErrSlowDown = fmt.Errorf("slow_down")
 func RequestDeviceCode() (*DeviceCode, error) {
 	form := url.Values{}
 	form.Set("client_id", GitHubClientID)
+	form.Set("scope", deviceFlowScope)
 
 	req, err := http.NewRequest("POST", deviceCodeURL, strings.NewReader(form.Encode()))
 	if err != nil {
