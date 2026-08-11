@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gitup/src/auth"
 	"gitup/src/git"
 	"gitup/src/helper"
 	"os"
@@ -59,16 +60,39 @@ func main() {
 
 		folder := "."
 		message := os.Args[len(os.Args)-1]
-		files := os.Args[2 : len(os.Args)-1]
+		args := os.Args[2 : len(os.Args)-1]
 
-		if len(files) > 0 && files[0] == "--path" {
-			if len(files) < 2 {
+		dynamicFileSelect := false
+
+		if len(args) > 0 && args[0] == "--dynamic_file" {
+			dynamicFileSelect = true
+			args = args[1:]
+		}
+
+		if len(args) > 0 && args[0] == "--path" {
+			if len(args) < 2 {
 				helper.LogFail("Please provide a project path")
 				return
 			}
 
-			folder = files[1]
-			files = files[2:]
+			folder = args[1]
+			args = args[2:]
+		}
+
+		files := args
+
+		if dynamicFileSelect {
+			selected, err := git.SelectFilesInteractively(folder)
+			if err != nil {
+				helper.LogError("Failed to open file selection: %s", err)
+				return
+			}
+
+			if selected == nil {
+				return
+			}
+
+			files = selected
 		}
 
 		helper.Log("Creating commit: %s", message)
@@ -76,6 +100,21 @@ func main() {
 		err := git.Commit(folder, files, message)
 		if err != nil {
 			helper.LogError("Failed to create commit: %s", err)
+		}
+
+	case "login":
+		if err := auth.Login(); err != nil {
+			helper.LogError("Login failed: %s", err)
+		}
+
+	case "logout":
+		if err := auth.Logout(); err != nil {
+			helper.LogError("Logout failed: %s", err)
+		}
+
+	case "whoami":
+		if err := auth.WhoAmI(); err != nil {
+			helper.LogError("Failed to check identity: %s", err)
 		}
 
 	default:
@@ -89,9 +128,14 @@ func printHelp() {
 	fmt.Println("Usage: gitup <command>")
 	fmt.Println()
 	fmt.Println("Commands:")
-	fmt.Println("  init              Create a GitUp repository")
-	fmt.Println("  setup             Configure a repository")
-	fmt.Println("  setup gitignore   Create default gitignore")
-	fmt.Println("  status            how repository status")
-	fmt.Println("  commit            Commit selected files")
+	fmt.Println("  init                        Create a GitUp repository")
+	fmt.Println("  setup                       Configure a repository")
+	fmt.Println("  setup gitignore             Create default gitignore")
+	fmt.Println("  status                      Show repository status")
+	fmt.Println("  commit <files> \"msg\"        Commit specific files")
+	fmt.Println("  commit \"msg\"                Commit all changes")
+	fmt.Println("  commit --dynamic_file \"msg\" Pick files interactively, then commit")
+	fmt.Println("  login                       Log in to GitHub")
+	fmt.Println("  logout                      Log out of GitHub")
+	fmt.Println("  whoami                      Show the logged-in GitHub identity")
 }
