@@ -17,6 +17,35 @@ func Commit(folder string, files []string, message string) error {
 		return err
 	}
 
+	status, err := worktree.Status()
+	if err != nil {
+		return err
+	}
+
+	if len(status) == 0 {
+		helper.Log("There are no changes to commit.")
+		return nil
+	}
+
+	helper.Log("Changes to be committed:")
+
+	for file, fileStatus := range status {
+		helper.Log("  %c %s", fileStatus.Worktree, file)
+	}
+
+	helper.Log("Commit message: %s", message)
+
+	response := helper.ConfirmationDiag(
+		"GitUp is about to create this commit.",
+		"These changes will be saved to local Git history.",
+		"Continue?",
+	)
+
+	if response == helper.N {
+		helper.Log("Commit cancelled.")
+		return nil
+	}
+
 	if len(files) == 0 {
 		helper.Log("Staging all changes.")
 
