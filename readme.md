@@ -12,6 +12,9 @@ The goal of GitUp is to make common Git operations easier and more approachable 
 Currently implemented:
 
 * `init` — Initialize a Git repository
+* `commit` — Commit specific files, or all changes
+* `commit --dynamic_file` — Interactively pick which files go into a commit
+* `login` / `logout` / `whoami` — GitHub authentication via OAuth device flow
 * Interactive confirmation dialogs
 * Colored/status-style logging
 * Cross-platform Go foundation
@@ -22,12 +25,14 @@ Planned commands include:
 ```text
 gitup init
 gitup status
-gitup add
 gitup commit
 gitup clone
 gitup publish
 gitup put aside
 gitup get aside
+gitup get
+gitup sync
+gitup erase history <commit>
 ```
 
 ## Why GitUp?
@@ -47,10 +52,19 @@ GitUp aims to provide a simpler interface for common Git workflows without hidin
 GitUp/
 ├── src/
 │   ├── main.go
+│   ├── auth/
+│   │   ├── auth.go        # Device flow client + credential storage
+│   │   └── commands.go    # login / logout / whoami
 │   ├── git/
-│   │   └── init.go
+│   │   ├── init.go
+│   │   ├── commit.go
+│   │   ├── select.go       # Interactive --dynamic_file picker
+│   │   ├── gitignore.go
+│   │   └── misc.go
 │   └── helper/
 │       ├── log.go
+│       ├── diag.go
+│       ├── browser.go
 │       └── ...
 ├── go.mod
 ├── go.sum
@@ -83,11 +97,76 @@ Initialize a repository:
 gitup init ./my-project
 ```
 
+Commit all changes:
+
+```bash
+gitup commit "Fix filesystem"
+```
+
+Commit specific files:
+
+```bash
+gitup commit src/foo.c src/bar.c "Fix filesystem"
+```
+
+Pick which files to commit interactively:
+
+```bash
+gitup commit --dynamic_file "Fix filesystem"
+```
+
+This opens a checklist of every changed file. Type numbers to toggle files
+(`1 3 4`), `a` to select all, `n` to select none, `c` to confirm and commit,
+or `q` to cancel.
+
+Log in to GitHub:
+
+```bash
+gitup login
+```
+
+This opens your browser and walks you through GitHub's device authorization
+flow — no password is ever entered into GitUp.
+
+Check who you're logged in as:
+
+```bash
+gitup whoami
+```
+
+Log out:
+
+```bash
+gitup logout
+```
+
 Display help:
 
 ```bash
 gitup --help
 ```
+
+## Authentication
+
+GitUp authenticates with GitHub through a **GitHub App using the OAuth
+device flow**. Running `gitup login` will:
+
+1. Ask GitHub for a short one-time code.
+2. Open your browser (or print a URL + code if it can't) to
+   `https://github.com/login/device`.
+3. Wait for you to enter the code and approve access.
+4. Store the resulting access + refresh token locally, associated with your
+   GitHub username.
+
+GitUp never asks for or stores your GitHub password. Access tokens are
+short-lived and refreshed automatically in the background — if a token is
+ever lost or leaked, it stops working on its own.
+
+Credentials are currently stored in a local config file
+(`~/.config/gitup/credentials.json` on Linux, the equivalent
+`AppData`/`Application Support` location on Windows/macOS). Moving this to
+OS-native secure credential storage (Keychain / Credential Manager / Secret
+Service) is a planned follow-up.
 
 ## Cross-Platform
 
