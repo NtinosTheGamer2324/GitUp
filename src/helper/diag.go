@@ -10,25 +10,22 @@ const (
 )
 
 func ConfirmationDiag(question string, consequences string, action string) Response {
-
 	var input string
 
-	fmt.Printf(question + "\n")
-	fmt.Printf(consequences + "\n")
+	fmt.Printf("\033[36m%s\033[0m\n", question)
+	fmt.Printf("\033[33m%s\033[0m\n", consequences)
 	fmt.Println()
 
 retry:
-	fmt.Printf("%s [y,N]: ", action)
+	fmt.Printf("\033[32m%s\033[0m [y,N]: ", action)
 	fmt.Scanln(&input)
 
 	if input == "Y" || input == "y" {
 		return Y
-	} else if input == "N" || input == "n" {
-		return N
-	} else if input == "" {
+	} else if input == "N" || input == "n" || input == "" {
 		return N
 	} else {
-		fmt.Println("Please Provide one of the two options. N or Y")
+		LogFail("Please provide one of the two options: Y or N")
 		goto retry
 	}
 }
