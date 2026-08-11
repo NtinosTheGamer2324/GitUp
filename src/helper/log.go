@@ -6,31 +6,24 @@ import (
 )
 
 func Log(format string, args ...any) {
-	fmt.Printf("GitUp: "+format+"\n", args...)
+	fmt.Printf("%s %s\n", Cyan("GitUp:"), fmt.Sprintf(format, args...))
 }
 
 func LogFail(format string, args ...any) {
-	fmt.Printf("[\033[31mFAIL\033[0m] GitUp: "+format+"\n", args...)
+	fmt.Printf("%s %s\n", Red(Bold("✗ FAIL")), fmt.Sprintf(format, args...))
 }
 
 func LogOk(format string, args ...any) {
-	fmt.Printf("[\033[32mOK\033[0m] GitUp: "+format+"\n", args...)
+	fmt.Printf("%s %s\n", Green(Bold("✓")), fmt.Sprintf(format, args...))
+}
+
+func LogWarn(format string, args ...any) {
+	fmt.Printf("%s %s\n", Yellow(Bold("⚠ WARN")), fmt.Sprintf(format, args...))
 }
 
 func LogError(format string, args ...any) {
-	timestamp := time.Now()
+	now := time.Now()
+	timestamp := Dim(fmt.Sprintf("[%02d:%02d:%02d]", now.Hour(), now.Minute(), now.Second()))
 
-	args = append(
-		[]any{
-			timestamp.Hour(),
-			timestamp.Minute(),
-			timestamp.Second(),
-		},
-		args...,
-	)
-
-	fmt.Printf(
-		"[%02d:%02d:%02d \033[31mERROR\033[0m] "+format+"\n",
-		args...,
-	)
+	fmt.Printf("%s %s %s\n", timestamp, Red(Bold("ERROR")), fmt.Sprintf(format, args...))
 }

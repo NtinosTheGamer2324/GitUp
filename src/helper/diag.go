@@ -12,12 +12,13 @@ const (
 func ConfirmationDiag(question string, consequences string, action string) Response {
 	var input string
 
-	fmt.Printf("\033[36m%s\033[0m\n", question)
-	fmt.Printf("\033[33m%s\033[0m\n", consequences)
+	fmt.Println()
+	fmt.Printf("%s\n", Bold(Cyan("? "+question)))
+	fmt.Printf("%s\n", Yellow(consequences))
 	fmt.Println()
 
 retry:
-	fmt.Printf("\033[32m%s\033[0m [y,N]: ", action)
+	fmt.Printf("%s %s: ", Green(Bold("→ "+action)), Dim("[y/N]"))
 	fmt.Scanln(&input)
 
 	if input == "Y" || input == "y" {
