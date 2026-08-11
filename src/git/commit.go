@@ -29,8 +29,21 @@ func Commit(folder string, files []string, message string) error {
 
 	helper.Log("Changes to be committed:")
 
-	for file, fileStatus := range status {
-		helper.Log("  %c %s", fileStatus.Worktree, file)
+	if len(files) == 0 {
+		for file, fileStatus := range status {
+			helper.Log("  %c %s", fileStatus.Worktree, file)
+		}
+	} else {
+		for _, file := range files {
+			fileStatus, ok := status[file]
+
+			if !ok {
+				helper.LogFail("File has no changes: %s", file)
+				return nil
+			}
+
+			helper.Log("  %c %s", fileStatus.Worktree, file)
+		}
 	}
 
 	helper.Log("Commit message: %s", message)
